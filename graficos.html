@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulação de Gráficos para Crianças</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .container {
+            margin: 20px auto;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .graph {
+            margin: 20px 0;
+        }
+        .bar {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+        .bar div {
+            width: 40px;
+            margin: 0 5px;
+            background-color: #007bff;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            border-radius: 5px 5px 0 0;
+        }
+        .pie {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+        }
+        .pie div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip: rect(0, 150px, 150px, 75px);
+        }
+        .slice {
+            border-radius: 50%;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .legend div {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend .color-box {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        .questions {
+            font-size: 16px;
+            color: #555;
+        }
+        .hidden {
+            display: none;
+        }
+        .feedback {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .score {
+            font-size: 20px;
+            margin-top: 20px;
+            color: #28a745;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .restart-button {
+            margin-top: 20px;
+        }
+				.question-highlight {
+			font-size: 30px; /* Tamanho da fonte */
+			color: red;  /* Cor vermelha */
+			font-weight: bold; /* Negrito */
+		}
+		.btn-sair {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #ff4d4d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-sair:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulação de Gráficos para Crianças</h1>
+    <div class="container">
+        <!-- Tela inicial para capturar o nome -->
+        <div id="name-screen">
+            <p>Olá! Qual é o seu nome?</p>
+            <input type="text" id="nameInput" placeholder="Digite seu nome">
+            <button onclick="setName()">Continuar</button>
+        </div>
+
+        <!-- Tela principal -->
+        <div id="main-screen" class="hidden">
+            <p id="welcomeMessage"></p>
+            <div id="graphs-container"></div>
+            <div class="score" id="scoreDisplay">Pontuação: 0</div>
+            <button class="restart-button hidden" onclick="restartGame()">Reiniciar Jogo</button>
+        </div>
+    </div>
+
+    <script>
+        let playerName = ''; // Nome da criança
+        let score = 0; // Pontuação total
+        let currentGraphIndex = 0; // Índice do gráfico atual
+        let attempts = {}; // Tentativas por pergunta
+
+        const graphs = [
+            {
+                title: "Gráfico 1: Brinquedos Favoritos",
+                graph: `<div class="bar">
+                            <div style="height: 100px; width:100px;">Bonecas<br>5</div>
+                            <div style="height: 60px; width:100px;background-color: #28a745;">Carrinhos<br>3</div>
+                            <div style="height: 140px; width:100px;background-color: #dc3545;">Bolas<br>7</div>
+                        </div>`,
+                question: '<p class="question-highlight">Qual é o brinquedo mais popular?</p>',
+                options: ["Bonecas", "Carrinhos", "Bolas", "Nenhum"],
+                answer: "Bolas"
+            },
+            {
+                title: "Gráfico 2: Cores Favoritas",
+                graph: `<div class="pie">
+                            <div><div class="slice" style="background-color: #007bff; transform: rotate(0deg);"></div></div>
+                            <div><div class="slice" style="background-color: #28a745; transform: rotate(144deg);"></div></div>
+                            <div><div class="slice" style="background-color: #dc3545; transform: rotate(252deg);"></div></div>
+                        </div>
+                        <div class="legend">
+                            <div><span class="color-box" style="background-color: #007bff;"></span>Azul (40%)</div>
+                            <div><span class="color-box" style="background-color: #28a745;"></span>Verde (30%)</div>
+                            <div><span class="color-box" style="background-color: #dc3545;"></span>Vermelho (30%)</div>
+                        </div>`,
+                question: '<p class="question-highlight">Qual é a cor mais popular?</p>',
+                options: ["Azul", "Verde", "Vermelho", "Nenhuma"],
+                answer: "Azul"
+            },
+            {
+                title: "Gráfico 3: Frutas Consumidas",
+                graph: `<div style="font-size: 24px;">
+                            Maçãs: 🍎🍎🍎🍎<br>
+                            Bananas: 🍌🍌🍌<br>
+                            Laranjas: 🍊🍊🍊🍊🍊
+                        </div>`,
+                question: '<p class="question-highlight">Qual fruta foi consumida mais vezes</p>',
+                options: ["Maçãs", "Bananas", "Laranjas", "Nenhuma"],
+                answer: "Laranjas"
+            },
+            {
+                title: "Gráfico 4: Temperatura Semanal",
+                graph: `<div class="bar">
+                            <div style="height: 100px;">Seg<br>25°C</div>
+                            <div style="height: 120px; background-color: #28a745;">Ter<br>27°C</div>
+                            <div style="height: 110px; background-color: #dc3545;">Qua<br>26°C</div>
+                            <div style="height: 130px; background-color: #ffc107;">Qui<br>28°C</div>
+                            <div style="height: 140px; background-color: #17a2b8;">Sex<br>29°C</div>
+                        </div>`,
+                question: '<p class="question-highlight">Em que dia a temperatura foi mais alta?</p>',
+                options: ["Segunda", "Terça", "Quinta", "Sexta"],
+                answer: "Sexta"
+            },
+            {
+                title: "Gráfico 5: Animais no Zoológico",
+                graph: `<div class="bar">
+                            <div style="height: 120px;width:70px;">Leões<br>6</div>
+                            <div style="height: 80px;width:70px; background-color: #28a745;">Girafas<br>4</div>
+                            <div style="height: 60px;width:70px; background-color: #dc3545;">Elefantes<br>3</div>
+                        </div>`,
+                question: '<p class="question-highlight">Qual animal tem a menor quantidade?</p>',
+                options: ["Leões", "Girafas", "Elefantes", "Nenhum"],
+                answer: "Elefantes"
+            },
+			 {
+				title: "Gráfico 6: Livros Lidos",
+				graph: `<div class="bar">
+                    <div style="height: 100px;">Ana<br>5</div>
+                    <div style="height: 60px; background-color: #28a745;">João<br>3</div>
+                    <div style="height: 140px; background-color: #dc3545;">Maria<br>7</div>
+                </div>`,
+				question: '<p class="question-highlight">Se Maria dar 2 livros para João, quem terá mais livros?</p>',
+				options: ["Maria", "João", "Ana", "Empate"],
+				answer: "Empate"
+			},
+			{
+				title: "Gráfico 7: Animais de Estimação",
+				graph: `<div style="font-size: 24px;">
+							Cachorros: 🐶🐶🐶<br>
+							Gatos: 🐱🐱<br>
+							Peixes: 🐠
+						</div>`,
+				question: '<p class="question-highlight">Quantos animais de estimação existem no total?</p>',
+				options: ["4", "5", "6", "7"],
+				answer: "6"
+			}
+        ];
+
+        function setName() {
+            playerName = document.getElementById('nameInput').value.trim();
+            if (!playerName) {
+                alert('Por favor, digite seu nome para continuar.');
+                return;
+            }
+
+            // Oculta a tela de nome e exibe a tela principal
+            document.getElementById('name-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+
+            // Exibe mensagem personalizada
+            document.getElementById('welcomeMessage').textContent = `Olá, ${playerName}! Vamos aprender com gráficos?`;
+            resetGame();
+        }
+
+        function loadGraph() {
+            const container = document.getElementById('graphs-container');
+            container.innerHTML = '';
+
+            if (currentGraphIndex >= graphs.length) {
+                container.innerHTML = `<p>Parabéns, ${playerName}! Você concluiu todos os gráficos!</p>`;
+				document.querySelector('.restart-button').classList.remove('hidden'); // Exibe o botão "Reiniciar"
+                return;
+            }
+
+            const graph = graphs[currentGraphIndex];
+            container.innerHTML = `
+                <h2>${graph.title}</h2>
+                <div>${graph.graph}</div>
+                <p>${graph.question}</p>
+                <div id="options"></div>
+                <div class="feedback" id="feedbackMessage"></div>
+            `;
+
+            const optionsContainer = document.getElementById('options');
+            graph.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, graph.answer);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedOption, correctAnswer) {
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            attempts[currentGraphIndex] = (attempts[currentGraphIndex] || 0) + 1;
+
+            if (selectedOption === correctAnswer) {
+                let points = 0;
+                if (attempts[currentGraphIndex] === 1) points = 10;
+                else if (attempts[currentGraphIndex] === 2) points = 5;
+                else if (attempts[currentGraphIndex] === 3) points = 2;
+                else points = 1;
+
+                score += points;
+                feedbackMessage.textContent = `Parabéns, ${playerName}! Você acertou e ganhou ${points} pontos!`;
+                feedbackMessage.style.color = '#28a745';
+                document.getElementById('scoreDisplay').textContent = `Pontuação: ${score}`;
+                setTimeout(nextGraph, 2000);
+            } else {
+                feedbackMessage.textContent = `${playerName}, quase lá! Tente novamente.`;
+                feedbackMessage.style.color = '#dc3545';
+            }
+        }
+
+        function nextGraph() {
+            currentGraphIndex++;
+            loadGraph();
+        }
+
+        function resetGame() {
+            playerName = '';
+            score = 0;
+            currentGraphIndex = 0;
+            attempts = {};
+            document.getElementById('scoreDisplay').textContent = 'Pontuação: 0';
+            document.getElementById('graphs-container').innerHTML = '';
+            loadGraph();
+        }
+
+        function restartGame() {
+            if (confirm("Deseja reiniciar o jogo? Sua pontuação será zerada.")) {
+                resetGame();
+            }
+        }
+    </script>
+	<a href="index.html" class="btn-sair">Sair</a>
+</body>
+</html>

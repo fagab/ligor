@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda Tabuada com Arraste e Solte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .container {
+            margin: 20px auto;
+            max-width: 600px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .input-container {
+            margin-bottom: 20px;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 18px;
+            width: 100%;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .feedback {
+            font-size: 20px;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none; /* Inicialmente oculto */
+            cursor: default;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .score {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .visual-helper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .visual-helper div {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            cursor: grab;
+        }
+        .droppable-area {
+            position: relative; /* Permite posicionar elementos absolutamente */
+            width: 100%;
+            min-height: 300px; /* Altura maior para acomodar mais bolinhas */
+            margin-top: 20px;
+            background-color: #e9ecef;
+            border: 2px dashed #aaa;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .droppable-area div {
+            position: absolute; /* Bolinhas podem ser posicionadas livremente */
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+        .welcome-message {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .welcome-input {
+            padding: 10px;
+            font-size: 18px;
+            width: 80%;
+            margin-top: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        .start-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .start-button:hover {
+            background-color: #218838;
+        }
+        .continue-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .continue-button:hover {
+            background-color: #0056b3;
+        }
+		.btn-sair {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #ff4d4d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-sair:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aprenda Tabuada com Arraste e Solte!</h1>
+    <div class="container">
+        <!-- Tela de Boas-Vindas -->
+        <div id="welcomeScreen" class="welcome-message">
+            <p>Olá! Qual é o seu nome?</p>
+            <input type="text" id="childName" class="welcome-input" placeholder="Digite seu nome aqui">
+            <button class="start-button" onclick="startGame()">Começar</button>
+        </div>
+
+        <!-- Jogo Principal -->
+        <div id="gameScreen" style="display: none;">
+            <div class="question" id="question">?</div>
+            <div class="input-container">
+                <input type="number" id="answer" placeholder="Digite sua resposta">
+            </div>
+            <button onclick="checkAnswer()">Verificar</button>
+            <div class="feedback" id="feedback">
+                <p id="feedbackMessage"></p>
+                <button class="continue-button" onclick="hideFeedback()">Continuar</button>
+            </div>
+            <div class="score" id="score">Pontuação: 0</div>
+            <div class="visual-helper" id="visualHelper"></div>
+            <div class="droppable-area" id="droppableArea"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = {};
+        let score = 0;
+        let childName = '';
+        let questionCount = 0; // Contador de perguntas
+
+        function startGame() {
+            childName = document.getElementById('childName').value.trim();
+            if (childName === '') {
+                alert('Por favor, digite seu nome para continuar.');
+                return;
+            }
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            generateQuestion();
+        }
+
+        function generateQuestion() {
+            let num1, num2;
+
+            // Primeiras 10 perguntas: tabuadas de 1, 2, 3 e 4
+            if (questionCount < 10) {
+                num1 = Math.floor(Math.random() * 4) + 1; // Números de 1 a 4
+                num2 = Math.floor(Math.random() * 10) + 1; // Números de 1 a 10
+            } else {
+                // Após 10 perguntas: tabuadas de 2 a 10
+                num1 = Math.floor(Math.random() * 9) + 2; // Números de 2 a 10
+                num2 = Math.floor(Math.random() * 9) + 2; // Números de 2 a 10
+            }
+
+            currentQuestion = {
+                num1: num1,
+                num2: num2,
+                answer: num1 * num2
+            };
+            document.getElementById('question').textContent = `${num1} x ${num2} = ?`;
+            document.getElementById('answer').value = '';
+            document.getElementById('feedback').style.display = 'none'; // Oculta a mensagem de feedback
+            updateVisualHelper(num1, num2);
+            clearDroppableArea();
+
+            questionCount++; // Incrementa o contador de perguntas
+        }
+
+        function updateVisualHelper(num1, num2) {
+            const visualHelper = document.getElementById('visualHelper');
+            visualHelper.innerHTML = ''; // Limpa os elementos anteriores
+            for (let i = 0; i < num1 * num2; i++) {
+                const circle = document.createElement('div');
+                circle.style.backgroundColor = `hsl(${i * 36}, 70%, 50%)`; // Cores diferentes para cada grupo
+                circle.setAttribute('draggable', true);
+                circle.addEventListener('dragstart', dragStart);
+                visualHelper.appendChild(circle);
+            }
+        }
+
+        function clearDroppableArea() {
+            document.getElementById('droppableArea').innerHTML = '';
+        }
+
+        function dragStart(event) {
+            event.dataTransfer.setData("text/plain", "circle"); // Define os dados a serem transferidos
+            event.target.style.opacity = '0.5'; // Efeito visual ao arrastar
+        }
+
+        function allowDrop(event) {
+            event.preventDefault(); // Permite que o elemento seja solto aqui
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const droppableArea = document.getElementById('droppableArea');
+
+            // Cria uma nova bolinha
+            const newCircle = document.createElement('div');
+            newCircle.style.width = '30px';
+            newCircle.style.height = '30px';
+            newCircle.style.backgroundColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
+            newCircle.style.borderRadius = '50%';
+            newCircle.style.position = 'absolute';
+
+            // Calcula a posição relativa ao contêiner
+            const rect = droppableArea.getBoundingClientRect();
+            const x = event.clientX - rect.left - 15; // Centraliza a bolinha no cursor
+            const y = event.clientY - rect.top - 15; // Centraliza a bolinha no cursor
+            newCircle.style.left = `${x}px`;
+            newCircle.style.top = `${y}px`;
+
+            droppableArea.appendChild(newCircle); // Adiciona a bolinha à área de destino
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answer').value);
+            const feedback = document.getElementById('feedback');
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            if (userAnswer === currentQuestion.answer) {
+                feedbackMessage.textContent = `Parabéns ${childName}, você é um gênio! 🎉🎉`;
+                feedback.className = 'feedback correct';
+                score += 10; // Incrementa a pontuação
+            } else {
+                feedbackMessage.textContent = `Quase lá ${childName}, tente novamente! 😊`;
+                feedback.className = 'feedback incorrect';
+            }
+            document.getElementById('score').textContent = `Pontuação: ${score}`;
+            feedback.style.display = 'block'; // Exibe a mensagem de feedback
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback').style.display = 'none'; // Oculta a mensagem de feedback
+            generateQuestion(); // Gera uma nova questão
+        }
+
+        // Configura o evento de arrastar e soltar na área de destino
+        document.getElementById('droppableArea').addEventListener('dragover', allowDrop);
+        document.getElementById('droppableArea').addEventListener('drop', drop);
+    </script>
+	<a href="index.html" class="btn-sair">Sair</a>
+</body>
+</html>

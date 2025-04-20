@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda as Horas com Relógio Interativo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .container {
+            margin: 20px auto;
+            max-width: 600px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .clock {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border: 5px solid #333;
+            border-radius: 50%;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .clock-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            background-color: #333;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            transition: transform 0.5s ease-in-out;
+        }
+        .hour-hand {
+            width: 4px;
+            height: 60px;
+            background-color: #007bff;
+            z-index: 5;
+            border-radius: 2px 2px 0 0;
+            transform: translateX(-50%);
+        }
+        .minute-hand {
+            width: 3px;
+            height: 80px;
+            background-color: #ff4d4d;
+            z-index: 6;
+            border-radius: 1.5px 1.5px 0 0;
+            transform: translateX(-50%);
+        }
+        .hour-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            transform: translate(-50%, -50%);
+        }
+        .input-container {
+            margin-bottom: 20px;
+        }
+        input[type="number"], input[type="text"] {
+            padding: 10px;
+            font-size: 18px;
+            width: 80px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .feedback {
+            font-size: 20px;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none; /* Inicialmente oculto */
+            cursor: default;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .score {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .continue-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .continue-button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+		.btn-sair {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #ff4d4d; /* Cor vermelha */
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+		}
+		.btn-sair:hover {
+			background-color: #cc0000; /* Escurece ao passar o mouse */
+		}
+    </style>
+</head>
+<body>
+    <h1>Aprenda as Horas com Relógio Interativo!</h1>
+    <div class="container">
+        <!-- Tela inicial para capturar o nome -->
+        <div id="start-screen">
+            <p>Olá! Qual é o seu nome?</p>
+            <input type="text" id="nameInput" placeholder="Digite seu nome">
+            <button onclick="startGame()">Começar</button>
+        </div>
+
+        <!-- Jogo principal -->
+        <div id="game-screen" class="hidden">
+            <div class="clock" id="clock">
+                <!-- Ponteiros -->
+                <div class="hand hour-hand" id="hourHand"></div>
+                <div class="hand minute-hand" id="minuteHand"></div>
+                <div class="clock-center"></div>
+                
+                <!-- Hora marcadores (serão adicionados via JavaScript) -->
+            </div>
+            <div class="input-container">
+                <input type="number" id="hourInput" placeholder="Hora (1-12)">
+                <input type="number" id="minuteInput" placeholder="Minuto (0-59)">
+            </div>
+            <button onclick="checkAnswer()">Verificar</button>
+            <div class="feedback" id="feedback">
+                <p id="feedbackMessage"></p>
+                <button class="continue-button" onclick="hideFeedback()">Continuar</button>
+            </div>
+            <div class="score" id="score">Pontuação: 0</div>
+        </div>
+    </div>
+
+    <script>
+        let currentHour = 0;
+        let currentMinute = 0;
+        let score = 0;
+        let playerName = ''; // Variável para armazenar o nome da criança
+
+        // Criar os marcadores de hora
+        function createHourMarkers() {
+            const clock = document.getElementById('clock');
+            const radius = 100; // Raio do relógio (metade da largura/altura do relógio)
+            
+            for (let i = 1; i <= 12; i++) {
+                const marker = document.createElement('div');
+                marker.className = 'hour-marker';
+                marker.innerText = i;
+                
+                // Calcular ângulo (em radianos) - começando do topo (12 horas)
+                const angle = (i * 30 - 90) * (Math.PI / 180);
+                
+                // Calcular posição
+                const x = radius + 0.8 * radius * Math.cos(angle);
+                const y = radius + 0.8 * radius * Math.sin(angle);
+                
+                marker.style.left = `${x}px`;
+                marker.style.top = `${y}px`;
+                
+                clock.appendChild(marker);
+            }
+        }
+
+        function generateTime() {
+            // Gera um horário aleatório
+            currentHour = Math.floor(Math.random() * 12) + 1; // Horas entre 1 e 12
+            currentMinute = Math.floor(Math.random() * 12) * 5; // Minutos em intervalos de 5 (0, 5, 10, ..., 55)
+            
+            updateClockHands(currentHour, currentMinute);
+
+            // Limpa os campos de resposta e o feedback
+            document.getElementById('hourInput').value = '';
+            document.getElementById('minuteInput').value = '';
+            document.getElementById('feedback').style.display = 'none';
+        }
+        
+        function updateClockHands(hour, minute) {
+            const hourHand = document.getElementById('hourHand');
+            const minuteHand = document.getElementById('minuteHand');
+            
+            // Corrigindo os ângulos dos ponteiros
+            const hourAngle = ((hour % 12) * 30) + ((minute / 60) * 30);
+            const minuteAngle = minute * 6;
+            
+            // Aplica as rotações
+            hourHand.style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
+            minuteHand.style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
+        }
+
+        function checkAnswer() {
+            const userHour = parseInt(document.getElementById('hourInput').value.trim());
+            const userMinute = parseInt(document.getElementById('minuteInput').value.trim());
+            const feedback = document.getElementById('feedback');
+            const feedbackMessage = document.getElementById('feedbackMessage');
+
+            if (isNaN(userHour) || isNaN(userMinute)) {
+                feedbackMessage.textContent = `${playerName}, por favor, preencha ambos os campos corretamente.`;
+                feedback.className = 'feedback incorrect';
+                feedback.style.display = 'block';
+                return;
+            }
+
+            if (userHour < 1 || userHour > 12 || userMinute < 0 || userMinute > 59) {
+                feedbackMessage.textContent = `${playerName}, insira uma hora válida (1-12) e minutos válidos (0-59).`;
+                feedback.className = 'feedback incorrect';
+                feedback.style.display = 'block';
+                return;
+            }
+
+            const correctHour = currentHour;
+            const correctMinute = currentMinute;
+
+            if (userHour === correctHour && userMinute === correctMinute) {
+                feedbackMessage.textContent = `${playerName}, você acertou! 🎉🎉`;
+                feedback.className = 'feedback correct';
+                score += 10;
+            } else {
+                feedbackMessage.textContent = `${playerName}, quase lá! O horário correto era ${String(correctHour).padStart(2, '0')}:${String(correctMinute).padStart(2, '0')}. 😊`;
+                feedback.className = 'feedback incorrect';
+            }
+            document.getElementById('score').textContent = `Pontuação: ${score}`;
+            feedback.style.display = 'block';
+
+            // Limpa os campos de entrada após a verificação
+            document.getElementById('hourInput').value = '';
+            document.getElementById('minuteInput').value = '';
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback').style.display = 'none';
+            generateTime();
+        }
+
+        function startGame() {
+            // Captura o nome da criança
+            playerName = document.getElementById('nameInput').value.trim();
+            if (!playerName) {
+                alert('Por favor, digite seu nome para continuar.');
+                return;
+            }
+
+            // Oculta a tela inicial e exibe o jogo
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            // Inicializa o jogo
+            createHourMarkers();
+            generateTime();
+        }
+    </script>
+	<button onclick="window.location.href='index.html'">Sair</button>
+</body>
+</html>

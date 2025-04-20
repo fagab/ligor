@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decompondo Números com Blocos Mágicos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .container {
+            margin: 20px auto;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            font-size: 18px;
+            width: 150px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .blocks-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .block {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .hundred {
+            background-color: #007bff; /* Azul */
+        }
+        .ten {
+            background-color: #28a745; /* Verde */
+        }
+        .unit {
+            background-color: #dc3545; /* Vermelho */
+        }
+        .decomposition {
+            font-size: 20px;
+            margin-top: 20px;
+            color: #555;
+        }
+        .feedback {
+            font-size: 18px;
+            margin-top: 20px;
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .hidden {
+            display: none;
+        }
+		.btn-sair {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #ff4d4d; /* Cor vermelha */
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+		}
+		.btn-sair:hover {
+			background-color: #cc0000; /* Escurece ao passar o mouse */
+		}
+    </style>
+</head>
+<body>
+    <h1>Blocos Mágicos: Aprenda a Decompor Números!</h1>
+    <div class="container">
+        <!-- Tela inicial para capturar o nome -->
+        <div id="name-screen">
+            <p>Olá! Qual é o seu nome?</p>
+            <input type="text" id="nameInput" placeholder="Digite seu nome">
+            <button onclick="setName()">Continuar</button>
+        </div>
+
+        <!-- Tela principal -->
+        <div id="main-screen" class="hidden">
+            <p id="welcomeMessage"></p>
+            <p>Digite um número para decompor:</p>
+            <input type="number" id="numberInput" placeholder="Ex.: 345">
+            <button onclick="startDecomposition()">Decompor</button>
+            <button onclick="stopGame()">Parar</button>
+
+            <div class="blocks-container" id="blocksContainer"></div>
+            <div class="decomposition" id="decompositionText"></div>
+
+            <!-- Pergunta interativa -->
+            <div id="questionScreen" class="hidden">
+                <p id="questionText"></p>
+                <input type="number" id="answerInput" placeholder="Sua resposta">
+                <button onclick="checkAnswer()">Responder</button>
+                <div id="feedbackMessage" class="feedback"></div>
+            </div>
+        </div>
+
+        <!-- Tela final -->
+        <div id="end-screen" class="hidden">
+            <p>Parabéns, você concluiu o desafio!</p>
+            <button onclick="playAgain()">Jogar Novamente</button>
+            <button onclick="stopGame()">Parar</button>
+        </div>
+    </div>
+
+    <script>
+        let playerName = ''; // Nome da criança
+        let number = 0; // Número escolhido
+        let hundreds = 0, tens = 0, units = 0; // Decomposição do número
+        let currentQuestion = ''; // Pergunta atual
+
+        function setName() {
+            playerName = document.getElementById('nameInput').value.trim();
+            if (!playerName) {
+                alert('Por favor, digite seu nome para continuar.');
+                return;
+            }
+
+            // Oculta a tela de nome e exibe a tela principal
+            document.getElementById('name-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+
+            // Exibe mensagem personalizada
+            document.getElementById('welcomeMessage').textContent = `Olá, ${playerName}! Vamos aprender a decompor números juntos?`;
+        }
+
+        function startDecomposition() {
+            const numberInput = document.getElementById('numberInput').value.trim();
+            number = parseInt(numberInput);
+
+            if (isNaN(number) || number < 1 || number > 9999) {
+                alert(`${playerName}, por favor, insira um número válido entre 1 e 9999.`);
+                return;
+            }
+
+            // Calcula a decomposição
+            hundreds = Math.floor(number / 100);
+            tens = Math.floor((number % 100) / 10);
+            units = number % 10;
+
+            // Limpa os blocos anteriores
+            const blocksContainer = document.getElementById('blocksContainer');
+            blocksContainer.innerHTML = '';
+
+            // Exibe os blocos
+            for (let i = 0; i < hundreds; i++) {
+                const block = createBlock('hundred', 100);
+                blocksContainer.appendChild(block);
+            }
+            for (let i = 0; i < tens; i++) {
+                const block = createBlock('ten', 10);
+                blocksContainer.appendChild(block);
+            }
+            for (let i = 0; i < units; i++) {
+                const block = createBlock('unit', 1);
+                blocksContainer.appendChild(block);
+            }
+
+            // Exibe a decomposição escrita
+            const decompositionText = document.getElementById('decompositionText');
+            decompositionText.textContent = `${number} = ${hundreds > 0 ? hundreds * 100 : ''} ${tens > 0 ? ' + ' + tens * 10 : ''} ${units > 0 ? ' + ' + units : ''}`;
+
+            // Inicia a primeira pergunta
+            askQuestion('centenas');
+        }
+
+        function createBlock(className, value) {
+            const block = document.createElement('div');
+            block.className = `block ${className}`;
+            block.textContent = value;
+            return block;
+        }
+
+        function askQuestion(part) {
+            const questionText = document.getElementById('questionText');
+            const questionScreen = document.getElementById('questionScreen');
+            const feedbackMessage = document.getElementById('feedbackMessage');
+
+            // Define a pergunta
+            if (part === 'centenas') {
+                questionText.textContent = `${playerName}, quantas centenas tem o número ${number}?`;
+                currentQuestion = 'centenas';
+            } else if (part === 'dezenas') {
+                questionText.textContent = `${playerName}, quantas dezenas tem o número ${number}?`;
+                currentQuestion = 'dezenas';
+            } else if (part === 'unidades') {
+                questionText.textContent = `${playerName}, quantas unidades tem o número ${number}?`;
+                currentQuestion = 'unidades';
+            }
+
+            // Limpa a resposta anterior e feedback
+            document.getElementById('answerInput').value = '';
+            feedbackMessage.textContent = '';
+            feedbackMessage.classList.remove('error');
+
+            // Exibe a tela de pergunta
+            questionScreen.classList.remove('hidden');
+        }
+
+        function checkAnswer() {
+            const answerInput = document.getElementById('answerInput').value.trim();
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            const answer = parseInt(answerInput);
+
+            // Valida a resposta
+            if (isNaN(answer)) {
+                feedbackMessage.textContent = `${playerName}, por favor, insira um número válido.`;
+                feedbackMessage.classList.add('error');
+                return;
+            }
+
+            if (currentQuestion === 'centenas' && answer === hundreds) {
+                feedbackMessage.textContent = `Parabéns, ${playerName}! Você acertou! Temos ${hundreds} centenas no número ${number}.`;
+                nextQuestion('dezenas');
+            } else if (currentQuestion === 'dezenas' && answer === tens) {
+                feedbackMessage.textContent = `Muito bem, ${playerName}! Você acertou! Temos ${tens} dezenas no número ${number}.`;
+                nextQuestion('unidades');
+            } else if (currentQuestion === 'unidades' && answer === units) {
+                feedbackMessage.textContent = `Incrível, ${playerName}! Você acertou! Temos ${units} unidades no número ${number}.`;
+                endGame();
+            } else {
+                feedbackMessage.textContent = `Quase lá, ${playerName}! Vamos tentar novamente. Lembre-se que estamos contando ${currentQuestion}.`;
+                feedbackMessage.classList.add('error');
+            }
+        }
+
+        function nextQuestion(nextPart) {
+            const questionScreen = document.getElementById('questionScreen');
+            questionScreen.classList.add('hidden');
+            setTimeout(() => askQuestion(nextPart), 1000); // Pausa antes da próxima pergunta
+        }
+
+        function endGame() {
+            const mainScreen = document.getElementById('main-screen');
+            const endScreen = document.getElementById('end-screen');
+
+            // Oculta a tela principal e exibe a tela final
+            mainScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+        }
+
+        function playAgain() {
+            const mainScreen = document.getElementById('main-screen');
+            const endScreen = document.getElementById('end-screen');
+
+            // Limpa os campos e volta para a tela principal
+            document.getElementById('numberInput').value = '';
+            document.getElementById('blocksContainer').innerHTML = '';
+            document.getElementById('decompositionText').textContent = '';
+
+            // Exibe a tela principal e oculta a tela final
+            mainScreen.classList.remove('hidden');
+            endScreen.classList.add('hidden');
+        }
+
+        function stopGame() {
+            const mainScreen = document.getElementById('main-screen');
+            const endScreen = document.getElementById('end-screen');
+
+            // Reinicia o jogo ao recarregar a página
+            location.reload();
+        }
+    </script>
+	 <a href="index.html" class="btn-sair">Sair</a>
+</body>
+</html>

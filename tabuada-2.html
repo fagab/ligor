@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Princípio da Tabuada com Bolinhas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .container {
+            margin: 20px auto;
+            max-width: 1200px; /* Aumentado para dar mais espaço */
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .input-container {
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            font-size: 18px;
+            width: 150px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .balls-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px; /* Aumentado o espaçamento entre os grupos */
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+        }
+        .group-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .ball {
+            width: 25px; /* Reduzido o tamanho das bolinhas */
+            height: 25px; /* Reduzido o tamanho das bolinhas */
+            background-color: #ff4d4d;
+            border-radius: 50%;
+            margin: 3px; /* Reduzido o espaçamento entre as bolinhas */
+        }
+        .operation {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .hidden {
+            display: none;
+        }
+        .explanation {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .final-message {
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Entendendo a Tabuada com Bolinhas</h1>
+    <div class="container">
+        <!-- Tela inicial para capturar o nome -->
+        <div id="name-screen">
+            <p>Olá! Qual é o seu nome?</p>
+            <input type="text" id="nameInput" placeholder="Digite seu nome">
+            <button onclick="setName()">Continuar</button>
+        </div>
+
+        <!-- Tela de explicação -->
+        <div id="explanation-screen" class="hidden">
+            <p id="welcomeMessage"></p>
+            <p class="explanation">A tabuada é uma forma divertida de aprender a multiplicação. Por exemplo, <strong>3 x 4</strong> significa "pegar 3 grupos de 4 bolinhas". Quer ver como funciona?</p>
+            <button onclick="chooseTabuada()">Vamos lá!</button>
+        </div>
+
+        <!-- Tela para escolher a tabuada -->
+        <div id="start-screen" class="hidden">
+            <p>Escolha a tabuada que deseja aprender:</p>
+            <input type="number" id="tabuadaInput" placeholder="Número (1-10)">
+            <button onclick="startTabuada()">Começar</button>
+        </div>
+
+        <!-- Jogo principal -->
+        <div id="game-screen" class="hidden">
+            <div class="operation" id="operation"></div>
+            <div class="balls-container" id="ballsContainer"></div>
+            <div>
+                <button onclick="previousStep()">Anterior</button>
+                <button onclick="nextStep()">Próximo</button>
+                <button onclick="goBackToStart()">Voltar ao Início</button>
+            </div>
+            <div class="final-message" id="finalMessage"></div>
+        </div>
+
+        <!-- Tela de reforço do conceito -->
+        <div id="concept-screen" class="hidden">
+            <p class="explanation"><strong>Parabéns, você concluiu a tabuada!</strong></p>
+            <p class="explanation" id="dynamicMessage"></p>
+            <button onclick="restartGame()">Voltar ao Início</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedNumber = 0; // Número da tabuada escolhido
+        let currentStep = 0; // Passo atual na tabuada (ex.: 2 x 3)
+        const maxSteps = 10; // Máximo de multiplicações (1 a 10)
+        let playerName = ''; // Nome da criança
+
+        function setName() {
+            playerName = document.getElementById('nameInput').value.trim();
+            if (!playerName) {
+                alert('Por favor, digite seu nome para continuar.');
+                return;
+            }
+
+            // Oculta a tela de nome e exibe a tela de explicação
+            document.getElementById('name-screen').classList.add('hidden');
+            document.getElementById('explanation-screen').classList.remove('hidden');
+
+            // Exibe mensagem personalizada
+            document.getElementById('welcomeMessage').textContent = `Olá, ${playerName}! Bem-vindo(a) ao mundo da multiplicação.`;
+        }
+
+        function chooseTabuada() {
+            // Oculta a tela de explicação e exibe a tela de escolha da tabuada
+            document.getElementById('explanation-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        function startTabuada() {
+            const tabuadaInput = document.getElementById('tabuadaInput').value.trim();
+            selectedNumber = parseInt(tabuadaInput);
+
+            if (isNaN(selectedNumber) || selectedNumber < 1 || selectedNumber > 10) {
+                alert(`${playerName}, por favor, insira um número válido entre 1 e 10.`);
+                return;
+            }
+
+            // Oculta a tela inicial e exibe o jogo
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            // Inicia no primeiro passo
+            currentStep = 1;
+            updateTabuada();
+        }
+
+        function updateTabuada() {
+            const operationElement = document.getElementById('operation');
+            const ballsContainer = document.getElementById('ballsContainer');
+            const finalMessage = document.getElementById('finalMessage');
+
+            // Limpa os grupos anteriores
+            ballsContainer.innerHTML = '';
+            finalMessage.textContent = '';
+
+            // Calcula o resultado da multiplicação
+            const result = selectedNumber * currentStep;
+
+            // Atualiza o texto da operação
+            operationElement.textContent = `${selectedNumber} x ${currentStep} = ${result}`;
+
+            // Cria os grupos de bolinhas
+            for (let i = 0; i < currentStep; i++) {
+                const group = document.createElement('div');
+                group.className = 'group';
+
+                // Adiciona o número do grupo
+                const groupNumber = document.createElement('div');
+                groupNumber.className = 'group-number';
+                groupNumber.textContent = i + 1;
+                group.appendChild(groupNumber);
+
+                // Adiciona as bolinhas
+                for (let j = 0; j < selectedNumber; j++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'ball';
+                    group.appendChild(ball);
+                }
+
+                ballsContainer.appendChild(group);
+            }
+
+            // Mensagem final quando chegar ao último passo
+            if (currentStep === maxSteps) {
+                finalMessage.textContent = `${playerName}, ${selectedNumber} x ${currentStep} = ${result} significa ${currentStep} grupos de ${selectedNumber} bolinhas. O total é a soma de todas as bolinhas!`;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < maxSteps) {
+                currentStep++;
+                updateTabuada();
+            } else {
+                // Exibe a tela de reforço do conceito
+                const dynamicMessage = document.getElementById('dynamicMessage');
+                const result = selectedNumber * maxSteps;
+                dynamicMessage.textContent = `Multiplicação é simplesmente a soma de grupos iguais. Por exemplo, ${selectedNumber} x ${maxSteps} = ${result} significa somar ${maxSteps} grupos de ${selectedNumber} bolinhas.`;
+
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('concept-screen').classList.remove('hidden');
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateTabuada();
+            } else {
+                alert(`${playerName}, você já está no primeiro passo da tabuada!`);
+            }
+        }
+
+        function goBackToStart() {
+            // Retorna à tela inicial para escolher outra tabuada
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+
+            // Reseta o estado
+            currentStep = 0;
+            document.getElementById('ballsContainer').innerHTML = '';
+            document.getElementById('finalMessage').textContent = '';
+        }
+
+        function restartGame() {
+            // Volta à tela inicial para escolher outra tabuada
+            document.getElementById('concept-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+
+            // Reseta o estado
+            currentStep = 0;
+            document.getElementById('ballsContainer').innerHTML = '';
+            document.getElementById('finalMessage').textContent = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprendendo a Tabuada do 5 com o Relógio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 40px;
+        }
+        .tabuada {
+            width: 30%;
+            text-align: left;
+        }
+        .tabuada div {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        .tabuada .highlight {
+            color: red;
+            font-weight: bold;
+        }
+        .clock {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            background-color: white;
+        }
+        .clock .number {
+            position: absolute;
+            width: 30px; /* Largura para centralizar o texto */
+            height: 30px; /* Altura para centralizar o texto */
+            line-height: 30px; /* Centraliza verticalmente o texto */
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            transform: translate(-50%, -50%); /* Centraliza o número no ponto calculado */
+        }
+        .clock .hand {
+            position: absolute;
+            width: 37%;
+            height: 2px;
+            background-color: black;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0% 0%;
+            transform: rotate(-90deg); /* Inicia o ponteiro no '12' */
+            transition: transform 0.5s ease;
+        }
+        .clock .center {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10; /* Garante que fique acima dos ponteiros */
+        }
+        .explanation {
+            font-size: 18px;
+            color: #555;
+            margin-top: 20px;
+            text-align: left;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+		.lista-esquerda {
+			padding-left: 0;
+			text-align: left;
+		}
+		.btn-sair {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #ff4d4d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-sair:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aprendendo a Tabuada do 5 com o Relógio</h1>
+    <div class="container">
+        <div class="tabuada" id="tabuada"></div>
+
+        <div class="clock" id="clock">
+            <div class="hand" id="minute-hand"></div>
+            <div class="center"></div>
+        </div>
+		<div>
+			
+			<p>Os minutos no relógio seguem a tabuada do 5!<br> Cada número representa 5 minutos.<br> Por exemplo:</p>
+			<ul class="lista-esquerda">
+				<li>Quando o ponteiro aponta para o <strong>1</strong>, são <strong>5 minutos</strong>.</li>
+				<li>Quando aponta para o <strong>2</strong>, <strong>são 10 minutos.</strong></li>
+				<li>E assim por diante, até <strong>completar 60 minutos no 12</strong>.</li>
+			</ul>
+			<p><strong>Vamos aprender juntos?</strong> 😊</p>
+			<button onclick="nextStep()">Avançar</button>
+			
+		</div>
+		 
+    
+    
+
+    <script>
+        let currentStep = 0; // Controla o progresso na tabuada
+        const tabuadaDiv = document.getElementById('tabuada');
+        const minuteHand = document.getElementById('minute-hand');
+        const clockDiv = document.getElementById('clock');
+        const radius = 85; // Raio para posicionar os números (ajuste conforme necessário)
+
+        // Função para gerar a tabuada do 5
+        function generateTabuada() {
+            const tabuada = [];
+            for (let i = 0; i <= 12; i++) {
+                tabuada.push(`5 x ${i} = ${5 * i}`);
+            }
+            return tabuada;
+        }
+
+        const tabuada = generateTabuada();
+
+        // Função para criar e posicionar os números do relógio
+        function createClockNumbers() {
+            for (let i = 1; i <= 12; i++) {
+                const numberDiv = document.createElement('div');
+                numberDiv.classList.add('number');
+                numberDiv.textContent = i;
+
+                // Ajustando o ângulo para que o '1' comece na posição correta
+                const angle = (i * 30 - 90) * (Math.PI / 180); // Ângulo em radianos
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+
+                numberDiv.style.left = `${clockDiv.offsetWidth / 2 + x}px`;
+                numberDiv.style.top = `${clockDiv.offsetHeight / 2 + y}px`;
+
+                clockDiv.appendChild(numberDiv);
+            }
+        }
+
+        // Função para atualizar a interface
+        function updateDisplay() {
+            // Limpa a tabuada anterior
+            tabuadaDiv.innerHTML = '';
+
+            // Exibe toda a tabuada
+            tabuada.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.textContent = item;
+                if (index === currentStep) {
+                    div.classList.add('highlight'); // Destaca o passo atual
+                }
+                tabuadaDiv.appendChild(div);
+            });
+
+            // Atualiza o ponteiro do relógio
+            const angle = currentStep * 30 - 90; // Ajustando o ângulo do ponteiro também
+            minuteHand.style.transform = `rotate(${angle}deg)`;
+        }
+
+        // Função para avançar um passo
+        function nextStep() {
+            if (currentStep <= 11) {
+                currentStep++;
+                updateDisplay();
+            } else {
+                alert("Parabéns! Você aprendeu como os minutos no relógio funcionam com a tabuada do 5!");
+            }
+        }
+
+        // Inicializa a interface
+        createClockNumbers();
+        updateDisplay();
+    </script>
+	<a href="index.html" class="btn-sair">Sair</a>
+</body>
+</html>

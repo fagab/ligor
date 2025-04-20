@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Aprendizado Infantil</title>
+    <style>
+        /* Estilos Gerais */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #333;
+            background-image: url('fundo.png'); /* Caminho para a imagem de fundo */
+            background-size: cover; /* Ajusta a imagem ao tamanho da tela */
+            background-position: center; /* Centraliza a imagem */
+        }
+		h1 {
+			font-size: 36px;
+			color: #e7c438; /* Cor vibrante do texto */
+			background-color: #f9f9f9; /* Fundo claro */
+			padding: 10px 20px; /* Espaçamento interno para o texto não ficar colado nas bordas */
+			border-radius: 10px; /* Bordas arredondadas para um visual mais suave */
+			margin-top: 20px;
+			display: inline-block; /* Faz o fundo se ajustar ao tamanho do texto */
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil para destacar o elemento */
+		}
+        .container {
+            margin: 40px auto;
+            max-width: 800px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8); /* Fundo translúcido para permitir que o fundo seja visível */
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .menu-item {
+            width: 150px;
+            height: 150px;
+            background-color: #0e223d; /* Fundo suave */
+            border: 2px solid #3533cd;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: #ff914d;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .menu-item:hover {
+            transform: scale(1.1);
+            background-color: #ff6f61;
+            color: #fff;
+        }
+        .menu-item img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 16px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <h1>Bem-vindo à Central de Aprendizado!</h1>
+
+    <!-- Container Principal -->
+    <div class="container">
+        <p>Escolha uma atividade para começar:</p>
+        <div class="menu">
+            <!-- Botão para Tabuada -->
+            <div class="menu-item" onclick="window.location.href='tabuada.html'">
+                <img src="tabuada.jpg" alt="Ícone de Tabuada">
+                <span>Tabuada</span>
+            </div>
+
+            <!-- Botão para Aprender a Tabuada do 5 com o Relógio -->
+            <div class="menu-item" onclick="window.location.href='minutos.html'">
+                <img src="relogio.jpg" alt="Ícone de Relógio">
+                <span>Tabuada do 5 com Relógio</span>
+            </div>
+
+            <!-- Botão para Gráficos -->
+            <div class="menu-item" onclick="window.location.href='graficos.html'">
+                <img src="graficos.jpg" alt="Ícone de Gráficos">
+                <span>Gráficos Divertidos</span>
+            </div>
+			
+			<!-- Botão para Relógio -->
+            <div class="menu-item" onclick="window.location.href='relogio.html'">
+                <img src="relogios.jpg" alt="Ícone de Gráficos">
+                <span>Aprender as Horas</span>
+            </div>
+			
+			<!-- Botão para Decompor -->
+            <div class="menu-item" onclick="window.location.href='decompor.html'">
+                <img src="decompor.jpg" alt="Ícone de Gráficos">
+                <span>Decompor números</span>
+            </div>
+
+            <!-- Adicione mais botões conforme necessário -->
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+        <p>Vamos aprender brincando! 🎉</p>
+    </footer>
+</body>
+</html>
